@@ -1,0 +1,1555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>科技感博客封面生成器</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --highlight-color: #4f46e5;
+      --text-color: #ffffff;
+      --subtext-color: #a1a1aa;
+      --tag-color: #4f46e5;
+      --tag-text-color: #ffffff;
+      --decoration1-color: #4f46e5;
+      --decoration2-color: #ec4899;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f5f5f7;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      gap: 24px;
+    }
+
+    .controls {
+      flex: 1;
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      max-width: 400px;
+      height: fit-content;
+      overflow-y: auto;
+      position: sticky;
+      top: 20px;
+      transition: all 0.3s ease;
+      max-height: calc(100vh - 40px);
+    }
+
+    .controls::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .controls::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.2);
+      border-radius: 3px;
+    }
+
+    .control-group {
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .control-group:last-child {
+      border-bottom: none;
+    }
+
+    .control-group h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+    }
+
+    .control-group h3 .toggle-group {
+      font-size: 12px;
+      font-weight: normal;
+      color: #666;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    input[type="text"],
+    input[type="color"],
+    input[type="url"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 12px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+      background-color: #fafafa;
+    }
+
+    input[type="text"]:focus,
+    input[type="color"]:focus,
+    input[type="url"]:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--highlight-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+      background-color: white;
+    }
+
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+
+    .feature-controls {
+      border: 1px solid #eee;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      background-color: #f9f9f9;
+    }
+
+    .add-feature {
+      background-color: #f0f0f0;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      width: 100%;
+      justify-content: center;
+      transition: all 0.2s ease;
+      margin-top: 5px;
+    }
+
+    .add-feature:hover {
+      background-color: #e0e0e0;
+    }
+
+    .remove-feature {
+      background-color: #ffebee;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 8px;
+      color: #d32f2f;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .remove-feature:hover {
+      background-color: #ffcdd2;
+    }
+
+    .card-container {
+      width: 735px;
+      height: 413px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 0;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      transform-style: preserve-3d;
+      perspective: 1000px;
+    }
+
+    .card-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      transition: all 0.5s ease;
+    }
+
+    .content {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .title {
+      font-size: 42px;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 10px;
+      max-width: 100%;
+      letter-spacing: -0.5px;
+      transition: all 0.3s ease;
+    }
+
+    .highlight-number {
+      font-size: 120px;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--highlight-color);
+      opacity: 0.1;
+      position: absolute;
+      right: 40px;
+      top: 20px;
+      z-index: 0;
+      transition: all 0.3s ease;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 20px;
+      opacity: 0.8;
+      transition: all 0.3s ease;
+    }
+
+    .features {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .feature {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 16px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease, transform 0.2s ease;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feature:hover {
+      transform: translateY(-3px);
+    }
+
+    .feature-icon {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .feature-content {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .feature-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .feature-desc {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+    }
+
+    .tag {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 20px;
+      display: inline-block;
+      background-color: var(--tag-color);
+      color: var(--tag-text-color);
+      transition: all 0.3s ease;
+    }
+
+    .logo-container {
+      width: 100px;
+      height: 100px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s ease;
+      padding: 12px;
+    }
+
+    .logo-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: all 0.3s ease;
+    }
+
+    .download-btn {
+      background-color: var(--highlight-color);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0, 125, 250, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .download-btn:hover {
+      background-color: #0062c4;
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 15px rgba(0, 125, 250, 0.3);
+    }
+
+    .download-btn:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .decoration {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.1;
+      transition: all 0.5s ease;
+      z-index: 1;
+    }
+
+    .decoration-1 {
+      width: 200px;
+      height: 200px;
+      top: -50px;
+      right: -50px;
+      background: radial-gradient(circle, var(--decoration1-color) 0%, rgba(79, 70, 229, 0) 70%);
+    }
+
+    .decoration-2 {
+      width: 150px;
+      height: 150px;
+      bottom: -30px;
+      left: -30px;
+      background: radial-gradient(circle, var(--decoration2-color) 0%, rgba(236, 72, 153, 0) 70%);
+    }
+
+    .html2canvas-container {
+      width: 735px !important;
+      height: 413px !important;
+    }
+
+    .color-preview {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+      border: 1px solid #ddd;
+      vertical-align: middle;
+      margin-left: 5px;
+      border-radius: 4px;
+    }
+
+    .svg-icon-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .svg-icon-option {
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .svg-icon-option:hover {
+      border-color: var(--highlight-color);
+    }
+
+    .svg-icon-option.selected {
+      border-color: var(--highlight-color);
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+
+    .control-collapse {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .control-content {
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+
+    .control-content.collapsed {
+      max-height: 0 !important;
+      opacity: 0;
+    }
+
+    .tech-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--highlight-color) 0%, rgba(79, 70, 229, 0) 70%);
+      opacity: 0.1;
+      z-index: 1;
+      transition: all 0.5s ease;
+    }
+
+    .tech-circle-1 {
+      width: 300px;
+      height: 300px;
+      top: -100px;
+      left: -100px;
+    }
+
+    .tech-circle-2 {
+      width: 200px;
+      height: 200px;
+      bottom: -50px;
+      right: -50px;
+    }
+
+    .highlight-gradient {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 70% 30%, var(--highlight-color) 0%, rgba(79, 70, 229, 0) 50%);
+      opacity: 0.05;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .color-presets {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .color-preset {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .color-preset:hover {
+      transform: scale(1.1);
+    }
+
+    .color-preset.selected {
+      border-color: #333;
+      transform: scale(1.1);
+    }
+
+    .color-input-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .color-input-group label {
+      margin-bottom: 0;
+      flex: 1;
+    }
+
+    .color-input-group input[type="color"] {
+      width: 50px;
+      height: 30px;
+      padding: 0;
+      margin-bottom: 0;
+    }
+
+    .color-display {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+
+    .icon-type-selector {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .icon-type-btn {
+      padding: 6px 12px;
+      border-radius: 4px;
+      background-color: #f0f0f0;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .icon-type-btn.active {
+      background-color: var(--highlight-color);
+      color: white;
+    }
+
+    .fa-icon-selector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .fa-icon-option {
+      width: 30px;
+      height: 30px;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      font-size: 16px;
+    }
+
+    .fa-icon-option:hover {
+      border-color: var(--highlight-color);
+    }
+
+    .fa-icon-option.selected {
+      border-color: var(--highlight-color);
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+
+    .custom-icon-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    .custom-icon-input input {
+      flex: 1;
+    }
+
+    @media (max-width: 1200px) {
+      .container {
+        flex-direction: column;
+      }
+
+      .controls {
+        max-width: 100%;
+        position: static;
+        height: auto;
+        margin-bottom: 20px;
+      }
+
+      .card-container {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 735/413;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1 style="margin-bottom: 20px; text-align: center;">科技感博客封面生成器</h1>
+
+  <div class="container">
+    <div class="controls">
+      <div class="control-group">
+        <h3 class="control-collapse">
+          背景设置
+          <span class="toggle-group">▼</span>
+        </h3>
+        <div class="control-content">
+          <label for="bg-type">背景类型</label>
+          <select id="bg-type">
+            <option value="gradient">渐变背景</option>
+            <option value="solid">纯色背景</option>
+            <option value="image">图片背景</option>
+          </select>
+
+          <div id="gradient-controls">
+            <label for="gradient-start">渐变起始颜色</label>
+            <div class="color-input-group">
+              <input type="color" id="gradient-start" value="#000000">
+              <div class="color-display" id="gradient-start-display"></div>
+            </div>
+
+            <label for="gradient-mid">渐变中间颜色</label>
+            <div class="color-input-group">
+              <input type="color" id="gradient-mid" value="#1a1a1a">
+              <div class="color-display" id="gradient-mid-display"></div>
+            </div>
+
+            <label for="gradient-end">渐变结束颜色</label>
+            <div class="color-input-group">
+              <input type="color" id="gradient-end" value="#2a2a2a">
+              <div class="color-display" id="gradient-end-display"></div>
+            </div>
+          </div>
+
+          <div id="solid-controls" style="display: none;">
+            <label for="solid-color">背景颜色</label>
+            <div class="color-input-group">
+              <input type="color" id="solid-color" value="#000000">
+              <div class="color-display" id="solid-color-display"></div>
+            </div>
+          </div>
+
+          <div id="image-controls" style="display: none;">
+            <label for="bg-image">背景图片URL</label>
+            <input type="url" id="bg-image" placeholder="输入图片URL">
+          </div>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3 class="control-collapse">
+          标题设置
+          <span class="toggle-group">▼</span>
+        </h3>
+        <div class="control-content">
+          <label for="main-title">主标题</label>
+          <input type="text" id="main-title" value="Spark-TTS" placeholder="输入主标题">
+
+          <label for="highlight-text">高亮文本</label>
+          <input type="text" id="highlight-text" value="是什么？" placeholder="输入高亮文本">
+
+          <label for="highlight-number">超大数字/文字</label>
+          <input type="text" id="highlight-number" value="AI" placeholder="输入要突出显示的数字或文字">
+
+          <label>颜色预设</label>
+          <div class="color-presets">
+            <div class="color-preset selected"
+              style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #9333ea 100%);"
+              data-highlight="#4f46e5" data-text="#ffffff" data-subtext="#a1a1aa" data-tag="#4f46e5"
+              data-tagtext="#ffffff" data-deco1="#4f46e5" data-deco2="#ec4899"></div>
+            <div class="color-preset"
+              style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);"
+              data-highlight="#3b82f6" data-text="#ffffff" data-subtext="#e0e7ff" data-tag="#3b82f6"
+              data-tagtext="#ffffff" data-deco1="#3b82f6" data-deco2="#ec4899"></div>
+            <div class="color-preset"
+              style="background: linear-gradient(135deg, #10b981 0%, #14b8a6 50%, #06b6d4 100%);"
+              data-highlight="#10b981" data-text="#ffffff" data-subtext="#d1fae5" data-tag="#10b981"
+              data-tagtext="#ffffff" data-deco1="#10b981" data-deco2="#3b82f6"></div>
+            <div class="color-preset"
+              style="background: linear-gradient(135deg, #f59e0b 0%, #f97316 50%, #ef4444 100%);"
+              data-highlight="#f59e0b" data-text="#1e293b" data-subtext="#64748b" data-tag="#f59e0b"
+              data-tagtext="#1e293b" data-deco1="#f59e0b" data-deco2="#f97316"></div>
+            <div class="color-preset"
+              style="background: linear-gradient(135deg, #ec4899 0%, #d946ef 50%, #a855f7 100%);"
+              data-highlight="#ec4899" data-text="#ffffff" data-subtext="#f3e8ff" data-tag="#ec4899"
+              data-tagtext="#ffffff" data-deco1="#ec4899" data-deco2="#a855f7"></div>
+          </div>
+
+          <label for="highlight-color">高亮颜色</label>
+          <div class="color-input-group">
+            <input type="color" id="highlight-color" value="#4f46e5">
+            <div class="color-display" id="highlight-color-display"></div>
+          </div>
+
+          <label for="text-color">文字颜色</label>
+          <div class="color-input-group">
+            <input type="color" id="text-color" value="#ffffff">
+            <div class="color-display" id="text-color-display"></div>
+          </div>
+
+          <label for="subtext-color">副文字颜色</label>
+          <div class="color-input-group">
+            <input type="color" id="subtext-color" value="#a1a1aa">
+            <div class="color-display" id="subtext-color-display"></div>
+          </div>
+
+          <label for="subtitle">副标题</label>
+          <input type="text" id="subtitle" value="基于 Qwen2.5 的下一代文本转语音系统" placeholder="输入副标题">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3 class="control-collapse">
+          功能特性
+          <span class="toggle-group">▼</span>
+        </h3>
+        <div class="control-content">
+          <div id="features-container">
+            <!-- 特性将通过JS动态添加 -->
+          </div>
+          <button type="button" class="add-feature" id="add-feature">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            添加特性
+          </button>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3 class="control-collapse">
+          Logo设置
+          <span class="toggle-group">▼</span>
+        </h3>
+        <div class="control-content">
+          <label for="logo-url">Logo URL</label>
+          <input type="url" id="logo-url"
+            value="https://ghproxy.net/raw.githubusercontent.com/SparkAudio/Spark-TTS/refs/heads/main/src/logo/SparkTTS.jpg"
+            placeholder="输入Logo图片URL">
+
+          <label for="logo-bg-color">Logo背景颜色</label>
+          <div class="color-input-group">
+            <input type="color" id="logo-bg-color" value="#ffffff">
+            <div class="color-display" id="logo-bg-color-display"></div>
+          </div>
+
+          <label for="logo-bg-opacity">Logo背景透明度</label>
+          <input type="range" id="logo-bg-opacity" min="0" max="1" step="0.1" value="0.1">
+          <span id="logo-opacity-value">0.1</span>
+
+          <label for="logo-padding">Logo内边距</label>
+          <input type="range" id="logo-padding" min="0" max="30" step="1" value="10">
+          <span id="logo-padding-value">10px</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3 class="control-collapse">
+          页脚设置
+          <span class="toggle-group">▼</span>
+        </h3>
+        <div class="control-content">
+          <label for="tag-text">标签文本</label>
+          <input type="text" id="tag-text" value="AI 语音合成" placeholder="输入标签文本">
+
+          <label for="tag-color">标签背景色</label>
+          <div class="color-input-group">
+            <input type="color" id="tag-color" value="#4f46e5">
+            <div class="color-display" id="tag-color-display"></div>
+          </div>
+
+          <label for="tag-text-color">标签文字色</label>
+          <div class="color-input-group">
+            <input type="color" id="tag-text-color" value="#ffffff">
+            <div class="color-display" id="tag-text-color-display"></div>
+          </div>
+
+          <label for="footer-text">页脚文本</label>
+          <input type="text" id="footer-text" value="by 文武科技柜" placeholder="输入页脚文本">
+        </div>
+      </div>
+
+      <div class="control-group">
+        <h3 class="control-collapse">
+          装饰元素
+          <span class="toggle-group">▼</span>
+        </h3>
+        <div class="control-content">
+          <label>
+            <input type="checkbox" id="decoration-1-enabled" checked> 启用右上角装饰
+          </label>
+          <label for="decoration-1-color">装饰1颜色</label>
+          <div class="color-input-group">
+            <input type="color" id="decoration-1-color" value="#4f46e5">
+            <div class="color-display" id="decoration-1-color-display"></div>
+          </div>
+
+          <label for="decoration-1-size">装饰1大小</label>
+          <input type="range" id="decoration-1-size" min="100" max="300" step="10" value="200">
+          <span id="decoration-1-size-value">200px</span>
+
+          <label for="decoration-1-opacity">装饰1透明度</label>
+          <input type="range" id="decoration-1-opacity" min="0" max="1" step="0.05" value="0.1">
+          <span id="decoration-1-opacity-value">0.1</span>
+
+          <label style="margin-top: 10px;">
+            <input type="checkbox" id="decoration-2-enabled" checked> 启用左下角装饰
+          </label>
+          <label for="decoration-2-color">装饰2颜色</label>
+          <div class="color-input-group">
+            <input type="color" id="decoration-2-color" value="#ec4899">
+            <div class="color-display" id="decoration-2-color-display"></div>
+          </div>
+
+          <label for="decoration-2-size">装饰2大小</label>
+          <input type="range" id="decoration-2-size" min="100" max="300" step="10" value="150">
+          <span id="decoration-2-size-value">150px</span>
+
+          <label for="decoration-2-opacity">装饰2透明度</label>
+          <input type="range" id="decoration-2-opacity" min="0" max="1" step="0.05" value="0.1">
+          <span id="decoration-2-opacity-value">0.1</span>
+
+          <label style="margin-top: 10px;">
+            <input type="checkbox" id="tech-circles-enabled" checked> 启用科技感圆形
+          </label>
+
+          <label for="tech-circles-opacity">科技感圆形透明度</label>
+          <input type="range" id="tech-circles-opacity" min="0" max="1" step="0.05" value="0.1">
+          <span id="tech-circles-opacity-value">0.1</span>
+        </div>
+      </div>
+
+
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <div class="card-container" id="blog-cover">
+        <div class="card-bg"></div>
+        <div class="highlight-gradient"></div>
+        <div class="tech-circle tech-circle-1"></div>
+        <div class="tech-circle tech-circle-2"></div>
+        <div class="decoration decoration-1"></div>
+        <div class="decoration decoration-2"></div>
+        <div class="highlight-number">AI</div>
+        <div class="content">
+          <div class="header">
+            <div>
+              <h1 class="title">Spark-TTS <span>是什么？</span></h1>
+              <p class="subtitle">基于 Qwen2.5 的下一代文本转语音系统</p>
+            </div>
+            <div class="logo-container">
+              <img
+                src="https://ghproxy.net/raw.githubusercontent.com/SparkAudio/Spark-TTS/refs/heads/main/src/logo/SparkTTS.jpg"
+                alt="Logo">
+            </div>
+          </div>
+          <div class="features">
+            <div class="feature">
+              <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#4f46e5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+              <div class="feature-content">
+                <div class="feature-title">BiCodec技术</div>
+                <div class="feature-desc">单流语音编码创新</div>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#4f46e5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              </div>
+              <div class="feature-content">
+                <div class="feature-title">零样本克隆</div>
+                <div class="feature-desc">仅需3秒参考音频</div>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#4f46e5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+              </div>
+              <div class="feature-content">
+                <div class="feature-title">细粒度控制</div>
+                <div class="feature-desc">精准调节语音参数</div>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="feature-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#4f46e5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+              </div>
+              <div class="feature-content">
+                <div class="feature-title">跨语言支持</div>
+                <div class="feature-desc">中英文无缝切换</div>
+              </div>
+            </div>
+          </div>
+          <div class="footer">
+            <div class="tag">AI 语音合成</div>
+            <div style="font-size: 12px;">by 文武科技柜</div>
+          </div>
+        </div>
+      </div>
+      <button class="download-btn" id="download-btn">
+        <i class="fas fa-download"></i>
+        下载封面图片
+      </button>
+    </div>
+  </div>
+
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    // 预定义的SVG图标选项
+    const svgIcons = [
+      {
+        name: "安全",
+        path: "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+      },
+      {
+        name: "语音",
+        path: "M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+      },
+      {
+        name: "设置",
+        path: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+      },
+      {
+        name: "语言",
+        path: "M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
+      },
+      {
+        name: "闪电",
+        path: "M13 10V3L4 14h7v7l9-11h-7z"
+      },
+      {
+        name: "火箭",
+        path: "M12.19 9.5L11 14l-4.5 2.5L6 16l-1.5-1.5L10 10l2.19-.5zM12.19 9.5L16 6l1.5 1.5L14 10l.5 2.19L9 19l-2.5-4.5L10 11l2.19-.5zM4.16 5.5l5.34 5.34M14.66 15.66l5.34 5.34"
+      },
+      {
+        name: "代码",
+        path: "M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
+      },
+      {
+        name: "数据库",
+        path: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"
+      },
+      {
+        name: "云",
+        path: "M8 16l.576-.576c.281-.281.422-.422.576-.424a.5.5 0 01.39.188C10 15.5 11.5 16 13 16s3-.5 3.458-1.812a.5.5 0 01.39-.188c.154.002.295.143.576.424L18 16a6 6 0 10-10 0z"
+      },
+      {
+        name: "AI",
+        path: "M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+      },
+      {
+        name: "芯片",
+        path: "M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM15 9l-2 2m0 0l-2 2m2-2l-2-2m2 2l2 2"
+      },
+      {
+        name: "网络",
+        path: "M8 16l.576-.576c.281-.281.422-.422.576-.424a.5.5 0 01.39.188C10 15.5 11.5 16 13 16s3-.5 3.458-1.812a.5.5 0 01.39-.188c.154.002.295.143.576.424L18 16a6 6 0 10-10 0zM8 8l.576-.576c.281-.281.422-.422.576-.424a.5.5 0 01.39.188C10 7.5 11.5 8 13 8s3-.5 3.458-1.812a.5.5 0 01.39-.188c.154.002.295.143.576.424L18 8a6 6 0 10-10 0z"
+      }
+    ];
+
+    // 预定义的Font Awesome图标选项
+    const faIcons = [
+      "fa-shield-halved", "fa-microphone", "fa-gear", "fa-language",
+      "fa-bolt", "fa-rocket", "fa-code", "fa-database",
+      "fa-cloud", "fa-robot", "fa-microchip", "fa-network-wired",
+      "fa-brain", "fa-atom", "fa-magnet", "fa-satellite-dish"
+    ];
+
+    // 初始化特性
+    const initialFeatures = [
+      { title: "BiCodec技术", desc: "单流语音编码创新", icon: svgIcons[0].path, iconType: "svg", color: "#4f46e5" },
+      { title: "零样本克隆", desc: "仅需3秒参考音频", icon: "fa-microphone", iconType: "fa", color: "#4f46e5" },
+      { title: "细粒度控制", desc: "精准调节语音参数", icon: svgIcons[2].path, iconType: "svg", color: "#4f46e5" },
+      { title: "跨语言支持", desc: "中英文无缝切换", icon: "fa-language", iconType: "fa", color: "#4f46e5" }
+    ];
+
+    let features = [...initialFeatures];
+
+    // 渲染特性控制面板
+    function renderFeatureControls() {
+      const container = document.getElementById('features-container');
+      container.innerHTML = '';
+
+      features.forEach((feature, index) => {
+        const featureDiv = document.createElement('div');
+        featureDiv.className = 'feature-controls';
+        featureDiv.innerHTML = `
+                    <label>特性标题</label>
+                    <input type="text" class="feature-title" value="${feature.title}" data-index="${index}">
+                    
+                    <label>特性描述</label>
+                    <input type="text" class="feature-desc" value="${feature.desc}" data-index="${index}">
+                    
+                    <label>图标颜色</label>
+                    <div class="color-input-group">
+                        <input type="color" class="feature-icon-color" value="${feature.color}" data-index="${index}">
+                        <div class="color-display" style="background-color: ${feature.color};"></div>
+                    </div>
+                    
+                    <div class="icon-type-selector">
+                        <button type="button" class="icon-type-btn ${feature.iconType === 'svg' ? 'active' : ''}" data-type="svg" data-index="${index}">SVG图标</button>
+                        <button type="button" class="icon-type-btn ${feature.iconType === 'fa' ? 'active' : ''}" data-type="fa" data-index="${index}">Font Awesome</button>
+                        <button type="button" class="icon-type-btn ${feature.iconType === 'custom' ? 'active' : ''}" data-type="custom" data-index="${index}">自定义</button>
+                    </div>
+                    
+                    <div class="svg-icon-selector" data-index="${index}" style="${feature.iconType !== 'svg' ? 'display:none' : ''}">
+                        ${svgIcons.map((icon, i) => `
+                            <div class="svg-icon-option ${feature.iconType === 'svg' && icon.path === feature.icon ? 'selected' : ''}" 
+                                 data-icon="${icon.path}" data-index="${index}" data-icon-index="${i}">
+                                <svg width="20" height="20" viewBox="0 0 24 24" stroke="${feature.color}">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icon.path}" />
+                                </svg>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="fa-icon-selector" data-index="${index}" style="${feature.iconType !== 'fa' ? 'display:none' : ''}">
+                        ${faIcons.map((icon, i) => `
+                            <div class="fa-icon-option ${feature.iconType === 'fa' && icon === feature.icon ? 'selected' : ''}" 
+                                 data-icon="${icon}" data-index="${index}" data-icon-index="${i}">
+                                <i class="fas ${icon}"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="custom-icon-input" data-index="${index}" style="${feature.iconType !== 'custom' ? 'display:none' : ''}">
+                        <input type="text" class="custom-icon" value="${feature.iconType === 'custom' ? feature.icon : ''}" placeholder="输入SVG路径或HTML" data-index="${index}">
+                    </div>
+                    
+                    <button type="button" class="remove-feature" data-index="${index}">删除特性</button>
+                `;
+        container.appendChild(featureDiv);
+      });
+    }
+
+    // 更新封面预览
+    function updatePreview() {
+      // 更新CSS变量
+      const highlightColor = document.getElementById('highlight-color').value;
+      const textColor = document.getElementById('text-color').value;
+      const subtextColor = document.getElementById('subtext-color').value;
+      const tagColor = document.getElementById('tag-color').value;
+      const tagTextColor = document.getElementById('tag-text-color').value;
+      const decoration1Color = document.getElementById('decoration-1-color').value;
+      const decoration2Color = document.getElementById('decoration-2-color').value;
+
+      document.documentElement.style.setProperty('--highlight-color', highlightColor);
+      document.documentElement.style.setProperty('--text-color', textColor);
+      document.documentElement.style.setProperty('--subtext-color', subtextColor);
+      document.documentElement.style.setProperty('--tag-color', tagColor);
+      document.documentElement.style.setProperty('--tag-text-color', tagTextColor);
+      document.documentElement.style.setProperty('--decoration1-color', decoration1Color);
+      document.documentElement.style.setProperty('--decoration2-color', decoration2Color);
+
+      // 更新颜色显示
+      document.getElementById('highlight-color-display').style.backgroundColor = highlightColor;
+      document.getElementById('text-color-display').style.backgroundColor = textColor;
+      document.getElementById('subtext-color-display').style.backgroundColor = subtextColor;
+      document.getElementById('tag-color-display').style.backgroundColor = tagColor;
+      document.getElementById('tag-text-color-display').style.backgroundColor = tagTextColor;
+      document.getElementById('decoration-1-color-display').style.backgroundColor = decoration1Color;
+      document.getElementById('decoration-2-color-display').style.backgroundColor = decoration2Color;
+      document.getElementById('gradient-start-display').style.backgroundColor = document.getElementById('gradient-start').value;
+      document.getElementById('gradient-mid-display').style.backgroundColor = document.getElementById('gradient-mid').value;
+      document.getElementById('gradient-end-display').style.backgroundColor = document.getElementById('gradient-end').value;
+      document.getElementById('solid-color-display').style.backgroundColor = document.getElementById('solid-color').value;
+      document.getElementById('logo-bg-color-display').style.backgroundColor = document.getElementById('logo-bg-color').value;
+
+      // 背景设置
+      const bgType = document.getElementById('bg-type').value;
+      const cardBg = document.querySelector('.card-bg');
+
+      if (bgType === 'gradient') {
+        const startColor = document.getElementById('gradient-start').value;
+        const midColor = document.getElementById('gradient-mid').value;
+        const endColor = document.getElementById('gradient-end').value;
+        cardBg.style.background = `linear-gradient(135deg, ${startColor} 0%, ${midColor} 50%, ${endColor} 100%)`;
+      } else if (bgType === 'solid') {
+        const solidColor = document.getElementById('solid-color').value;
+        cardBg.style.background = solidColor;
+      } else if (bgType === 'image') {
+        const bgImage = document.getElementById('bg-image').value;
+        if (bgImage) {
+          cardBg.style.background = `url('${bgImage}') center/cover no-repeat`;
+        }
+      }
+
+      // 标题设置
+      const mainTitle = document.getElementById('main-title').value;
+      const highlightText = document.getElementById('highlight-text').value;
+      const highlightNumber = document.getElementById('highlight-number').value;
+      const subtitle = document.getElementById('subtitle').value;
+
+      document.querySelector('.title').innerHTML = `${mainTitle} <span>${highlightText}</span>`;
+      document.querySelector('.title span').style.color = highlightColor;
+      document.querySelector('.subtitle').textContent = subtitle;
+      document.querySelector('.highlight-number').textContent = highlightNumber;
+      document.querySelector('.highlight-number').style.color = highlightColor;
+
+      // 设置文字颜色
+      document.querySelector('.title').style.color = textColor;
+      document.querySelector('.subtitle').style.color = subtextColor;
+
+      // 更新高亮渐变
+      document.querySelector('.highlight-gradient').style.background =
+        `radial-gradient(circle at 70% 30%, ${highlightColor} 0%, rgba(${hexToRgb(highlightColor)},0) 50%)`;
+
+      // 特性设置
+      const featuresContainer = document.querySelector('.features');
+      featuresContainer.innerHTML = '';
+
+      features.forEach(feature => {
+        const featureDiv = document.createElement('div');
+        featureDiv.className = 'feature';
+
+        let iconHTML = '';
+        if (feature.iconType === 'svg') {
+          iconHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="${feature.color}">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${feature.icon}" />
+                        </svg>
+                    `;
+        } else if (feature.iconType === 'fa') {
+          iconHTML = `<i class="fas ${feature.icon}" style="color: ${feature.color}; font-size: 20px;"></i>`;
+        } else if (feature.iconType === 'custom') {
+          iconHTML = feature.icon;
+        }
+
+        featureDiv.innerHTML = `
+                    <div class="feature-icon">
+                        ${iconHTML}
+                    </div>
+                    <div class="feature-content">
+                        <div class="feature-title">${feature.title}</div>
+                        <div class="feature-desc">${feature.desc}</div>
+                    </div>
+                `;
+        featuresContainer.appendChild(featureDiv);
+
+        // 设置特性文字颜色
+        featureDiv.querySelector('.feature-title').style.color = textColor;
+        featureDiv.querySelector('.feature-desc').style.color = subtextColor;
+      });
+
+      // Logo设置
+      const logoUrl = document.getElementById('logo-url').value;
+      const logoBgColor = document.getElementById('logo-bg-color').value;
+      const logoBgOpacity = document.getElementById('logo-bg-opacity').value;
+      const logoPadding = document.getElementById('logo-padding').value;
+
+      document.querySelector('.logo-container img').src = logoUrl;
+      document.querySelector('.logo-container').style.backgroundColor = `rgba(${hexToRgb(logoBgColor)}, ${logoBgOpacity})`;
+      document.querySelector('.logo-container').style.padding = `${logoPadding}px`;
+
+      // 页脚设置
+      const tagText = document.getElementById('tag-text').value;
+      const footerText = document.getElementById('footer-text').value;
+
+      document.querySelector('.tag').textContent = tagText;
+      document.querySelector('.footer div:last-child').textContent = footerText;
+      document.querySelector('.footer div:last-child').style.color = subtextColor;
+
+      // 装饰元素
+      const decoration1Enabled = document.getElementById('decoration-1-enabled').checked;
+      const decoration1Size = document.getElementById('decoration-1-size').value;
+      const decoration1Opacity = document.getElementById('decoration-1-opacity').value;
+
+      const decoration2Enabled = document.getElementById('decoration-2-enabled').checked;
+      const decoration2Size = document.getElementById('decoration-2-size').value;
+      const decoration2Opacity = document.getElementById('decoration-2-opacity').value;
+
+      const techCirclesEnabled = document.getElementById('tech-circles-enabled').checked;
+      const techCirclesOpacity = document.getElementById('tech-circles-opacity').value;
+
+      document.querySelector('.decoration-1').style.display = decoration1Enabled ? 'block' : 'none';
+      document.querySelector('.decoration-1').style.width = `${decoration1Size}px`;
+      document.querySelector('.decoration-1').style.height = `${decoration1Size}px`;
+      document.querySelector('.decoration-1').style.opacity = decoration1Opacity;
+      document.querySelector('.decoration-1').style.background = `radial-gradient(circle, ${decoration1Color} 0%, rgba(${hexToRgb(decoration1Color)},0) 70%)`;
+
+      document.querySelector('.decoration-2').style.display = decoration2Enabled ? 'block' : 'none';
+      document.querySelector('.decoration-2').style.width = `${decoration2Size}px`;
+      document.querySelector('.decoration-2').style.height = `${decoration2Size}px`;
+      document.querySelector('.decoration-2').style.opacity = decoration2Opacity;
+      document.querySelector('.decoration-2').style.background = `radial-gradient(circle, ${decoration2Color} 0%, rgba(${hexToRgb(decoration2Color)},0) 70%)`;
+
+      document.querySelector('.tech-circle-1').style.display = techCirclesEnabled ? 'block' : 'none';
+      document.querySelector('.tech-circle-2').style.display = techCirclesEnabled ? 'block' : 'none';
+      document.querySelector('.tech-circle-1').style.opacity = techCirclesOpacity;
+      document.querySelector('.tech-circle-2').style.opacity = techCirclesOpacity;
+      document.querySelector('.tech-circle-1').style.background = `radial-gradient(circle, ${highlightColor} 0%, rgba(${hexToRgb(highlightColor)},0) 70%)`;
+      document.querySelector('.tech-circle-2').style.background = `radial-gradient(circle, ${highlightColor} 0%, rgba(${hexToRgb(highlightColor)},0) 70%)`;
+    }
+
+    // 辅助函数：十六进制颜色转RGB
+    function hexToRgb(hex) {
+      const r = parseInt(hex.slice(1, 3), 16);
+      const g = parseInt(hex.slice(3, 5), 16);
+      const b = parseInt(hex.slice(5, 7), 16);
+      return `${r}, ${g}, ${b}`;
+    }
+
+    // 事件监听器
+    document.addEventListener('DOMContentLoaded', function () {
+      // 初始化特性控制面板
+      renderFeatureControls();
+
+      // 控制面板折叠功能
+      document.querySelectorAll('.control-collapse').forEach(collapse => {
+        collapse.addEventListener('click', function () {
+          const content = this.nextElementSibling;
+          const toggle = this.querySelector('.toggle-group');
+
+          if (content.classList.contains('collapsed')) {
+            content.classList.remove('collapsed');
+            toggle.textContent = '▼';
+          } else {
+            content.classList.add('collapsed');
+            toggle.textContent = '▶';
+          }
+        });
+      });
+
+      // 背景类型切换
+      document.getElementById('bg-type').addEventListener('change', function () {
+        document.getElementById('gradient-controls').style.display = this.value === 'gradient' ? 'block' : 'none';
+        document.getElementById('solid-controls').style.display = this.value === 'solid' ? 'block' : 'none';
+        document.getElementById('image-controls').style.display = this.value === 'image' ? 'block' : 'none';
+        updatePreview();
+      });
+
+      // 颜色预设选择
+      document.querySelectorAll('.color-preset').forEach(preset => {
+        preset.addEventListener('click', function () {
+          // 移除所有选中状态
+          document.querySelectorAll('.color-preset').forEach(p => {
+            p.classList.remove('selected');
+          });
+
+          // 添加选中状态
+          this.classList.add('selected');
+
+          // 应用预设
+          document.getElementById('highlight-color').value = this.dataset.highlight;
+          document.getElementById('text-color').value = this.dataset.text;
+          document.getElementById('subtext-color').value = this.dataset.subtext;
+          document.getElementById('tag-color').value = this.dataset.tag;
+          document.getElementById('tag-text-color').value = this.dataset.tagtext;
+          document.getElementById('decoration-1-color').value = this.dataset.deco1;
+          document.getElementById('decoration-2-color').value = this.dataset.deco2;
+
+          // 更新特性图标颜色
+          features.forEach(feature => {
+            feature.color = this.dataset.highlight;
+          });
+          renderFeatureControls();
+
+          updatePreview();
+        });
+      });
+
+      // 添加特性按钮
+      document.getElementById('add-feature').addEventListener('click', function () {
+        features.push({
+          title: "新特性",
+          desc: "特性描述",
+          icon: svgIcons[0].path,
+          iconType: "svg",
+          color: document.getElementById('highlight-color').value
+        });
+        renderFeatureControls();
+        updatePreview();
+      });
+
+      // 删除特性按钮（事件委托）
+      document.getElementById('features-container').addEventListener('click', function (e) {
+        if (e.target.classList.contains('remove-feature')) {
+          const index = parseInt(e.target.getAttribute('data-index'));
+          features.splice(index, 1);
+          renderFeatureControls();
+          updatePreview();
+        }
+      });
+
+      // 更新特性标题/描述/颜色（事件委托）
+      document.getElementById('features-container').addEventListener('input', function (e) {
+        if (e.target.classList.contains('feature-title')) {
+          const index = parseInt(e.target.getAttribute('data-index'));
+          features[index].title = e.target.value;
+          updatePreview();
+        } else if (e.target.classList.contains('feature-desc')) {
+          const index = parseInt(e.target.getAttribute('data-index'));
+          features[index].desc = e.target.value;
+          updatePreview();
+        } else if (e.target.classList.contains('feature-icon-color')) {
+          const index = parseInt(e.target.getAttribute('data-index'));
+          features[index].color = e.target.value;
+
+          // 更新颜色显示
+          e.target.nextElementSibling.style.backgroundColor = e.target.value;
+
+          updatePreview();
+        } else if (e.target.classList.contains('custom-icon')) {
+          const index = parseInt(e.target.getAttribute('data-index'));
+          features[index].icon = e.target.value;
+          updatePreview();
+        }
+      });
+
+      // 选择图标类型（事件委托）
+      document.getElementById('features-container').addEventListener('click', function (e) {
+        if (e.target.classList.contains('icon-type-btn')) {
+          const type = e.target.getAttribute('data-type');
+          const index = parseInt(e.target.getAttribute('data-index'));
+
+          // 更新按钮状态
+          const buttons = e.target.parentElement.querySelectorAll('.icon-type-btn');
+          buttons.forEach(btn => btn.classList.remove('active'));
+          e.target.classList.add('active');
+
+          // 更新特性
+          features[index].iconType = type;
+
+          // 设置默认图标
+          if (type === 'svg' && !features[index].icon.startsWith('M')) {
+            features[index].icon = svgIcons[0].path;
+          } else if (type === 'fa' && !features[index].icon.startsWith('fa-')) {
+            features[index].icon = faIcons[0];
+          } else if (type === 'custom' && features[index].iconType !== 'custom') {
+            features[index].icon = '';
+          }
+
+          // 显示/隐藏对应的选择器
+          const container = e.target.closest('.feature-controls');
+          container.querySelector('.svg-icon-selector').style.display = type === 'svg' ? 'flex' : 'none';
+          container.querySelector('.fa-icon-selector').style.display = type === 'fa' ? 'flex' : 'none';
+          container.querySelector('.custom-icon-input').style.display = type === 'custom' ? 'flex' : 'none';
+
+          renderFeatureControls();
+          updatePreview();
+        }
+      });
+
+      // 选择SVG图标（事件委托）
+      document.getElementById('features-container').addEventListener('click', function (e) {
+        if (e.target.closest('.svg-icon-option')) {
+          const option = e.target.closest('.svg-icon-option');
+          const index = parseInt(option.getAttribute('data-index'));
+          const iconIndex = parseInt(option.getAttribute('data-icon-index'));
+
+          // 移除所有选中状态
+          document.querySelectorAll(`.svg-icon-selector[data-index="${index}"] .svg-icon-option`).forEach(opt => {
+            opt.classList.remove('selected');
+          });
+
+          // 添加选中状态
+          option.classList.add('selected');
+
+          // 更新特性图标
+          features[index].icon = svgIcons[iconIndex].path;
+          features[index].iconType = 'svg';
+          updatePreview();
+        }
+      });
+
+      // 选择Font Awesome图标（事件委托）
+      document.getElementById('features-container').addEventListener('click', function (e) {
+        if (e.target.closest('.fa-icon-option')) {
+          const option = e.target.closest('.fa-icon-option');
+          const index = parseInt(option.getAttribute('data-index'));
+          const iconIndex = parseInt(option.getAttribute('data-icon-index'));
+
+          // 移除所有选中状态
+          document.querySelectorAll(`.fa-icon-selector[data-index="${index}"] .fa-icon-option`).forEach(opt => {
+            opt.classList.remove('selected');
+          });
+
+          // 添加选中状态
+          option.classList.add('selected');
+
+          // 更新特性图标
+          features[index].icon = faIcons[iconIndex];
+          features[index].iconType = 'fa';
+          updatePreview();
+        }
+      });
+
+      // Logo背景透明度滑块
+      document.getElementById('logo-bg-opacity').addEventListener('input', function () {
+        document.getElementById('logo-opacity-value').textContent = this.value;
+        updatePreview();
+      });
+
+      // Logo内边距滑块
+      document.getElementById('logo-padding').addEventListener('input', function () {
+        document.getElementById('logo-padding-value').textContent = `${this.value}px`;
+        updatePreview();
+      });
+
+      // 装饰元素大小滑块
+      document.getElementById('decoration-1-size').addEventListener('input', function () {
+        document.getElementById('decoration-1-size-value').textContent = `${this.value}px`;
+        updatePreview();
+      });
+
+      document.getElementById('decoration-2-size').addEventListener('input', function () {
+        document.getElementById('decoration-2-size-value').textContent = `${this.value}px`;
+        updatePreview();
+      });
+
+      // 装饰元素透明度滑块
+      document.getElementById('decoration-1-opacity').addEventListener('input', function () {
+        document.getElementById('decoration-1-opacity-value').textContent = this.value;
+        updatePreview();
+      });
+
+      document.getElementById('decoration-2-opacity').addEventListener('input', function () {
+        document.getElementById('decoration-2-opacity-value').textContent = this.value;
+        updatePreview();
+      });
+
+      document.getElementById('tech-circles-opacity').addEventListener('input', function () {
+        document.getElementById('tech-circles-opacity-value').textContent = this.value;
+        updatePreview();
+      });
+
+      // 所有其他输入变化时更新预览
+      const inputs = document.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        if (input.id !== 'bg-image') { // 排除背景图片URL，因为它需要特殊处理
+          input.addEventListener('input', updatePreview);
+        }
+      });
+
+      // 背景图片URL特殊处理（延迟更新，避免频繁请求）
+      let bgImageTimeout;
+      document.getElementById('bg-image').addEventListener('input', function () {
+        clearTimeout(bgImageTimeout);
+        bgImageTimeout = setTimeout(updatePreview, 500);
+      });
+
+      // 下载按钮
+      document.getElementById('download-btn').addEventListener('click', function () {
+        const element = document.getElementById('blog-cover');
+
+        // 临时移除可能影响渲染的样式
+        const originalStyles = {
+          backdropFilter: document.querySelector('.feature') ? document.querySelector('.feature').style.backdropFilter : 'none',
+          filter: document.querySelector('.feature') ? document.querySelector('.feature').style.filter : 'none'
+        };
+
+        // 禁用可能引起问题的CSS属性
+        const features = document.querySelectorAll('.feature');
+        features.forEach(feature => {
+          feature.style.backdropFilter = 'none';
+          feature.style.filter = 'none';
+        });
+
+        html2canvas(element, {
+          scale: 1,
+          logging: false,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: null,
+          ignoreElements: (element) => {
+            // 忽略下载按钮
+            return element.id === 'download-btn';
+          }
+        }).then(canvas => {
+          const link = document.createElement('a');
+          link.download = 'blog-cover.png';
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+
+          // 恢复原始样式
+          features.forEach(feature => {
+            feature.style.backdropFilter = originalStyles.backdropFilter;
+            feature.style.filter = originalStyles.filter;
+          });
+        });
+      });
+
+      // 初始更新预览
+      updatePreview();
+
+      // 添加卡片悬停效果
+      const card = document.getElementById('blog-cover');
+      card.addEventListener('mousemove', (e) => {
+        const xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+        const yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+        card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+      });
+
+      card.addEventListener('mouseenter', () => {
+        card.style.transition = 'none';
+        document.querySelector('.title').style.transform = 'translateZ(50px)';
+        document.querySelector('.subtitle').style.transform = 'translateZ(30px)';
+        document.querySelectorAll('.feature').forEach(feature => {
+          feature.style.transform = 'translateZ(40px)';
+        });
+        document.querySelector('.logo-container').style.transform = 'translateZ(60px)';
+      });
+
+      card.addEventListener('mouseleave', () => {
+        card.style.transition = 'all 0.5s ease';
+        card.style.transform = 'rotateY(0deg) rotateX(0deg)';
+        document.querySelector('.title').style.transform = 'translateZ(0px)';
+        document.querySelector('.subtitle').style.transform = 'translateZ(0px)';
+        document.querySelectorAll('.feature').forEach(feature => {
+          feature.style.transform = 'translateZ(0px)';
+        });
+        document.querySelector('.logo-container').style.transform = 'translateZ(0px)';
+      });
+    });
+  </script>
+</body>
+
+</html>
