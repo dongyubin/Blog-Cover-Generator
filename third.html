@@ -1479,6 +1479,8 @@
       // 下载按钮
       document.getElementById('download-btn').addEventListener('click', function () {
         const element = document.getElementById('blog-cover');
+        const width = 735; // 固定宽度
+        const height = 413; // 固定高度
 
         // 临时移除可能影响渲染的样式
         const originalStyles = {
@@ -1495,6 +1497,8 @@
 
         html2canvas(element, {
           scale: 1,
+          width: width,
+          height: height,
           logging: false,
           useCORS: true,
           allowTaint: true,
